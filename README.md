@@ -102,8 +102,8 @@ POST /auth/login
 Content-Type: application/json
 
 {
-  \"username\": \"demo\",
-  \"password\": \"demo\"
+  "username": "demo",
+  "password": "demo"
 }
 ```
 
