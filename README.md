@@ -98,7 +98,7 @@ Docker Compose собирает и запускает инфраструктур
 ### Пример авторизации (через gateway):
 
 ```http
-POST /auth/login
+POST /auth/sign-in
 Content-Type: application/json
 
 {
