@@ -1,5 +1,5 @@
 main:
-  port: ${MAIN_PORT:8089}
+  port: ${MAIN_PORT:8080}
 
 logger:
   level: ${LOG_LEVEL:debug}
@@ -7,8 +7,8 @@ logger:
 
 
 datasource:
-  port: ${DATASOURCE_PORT:5445}
-  host: ${DATASOURCE_HOST:localhost}
+  port: ${DATASOURCE_PORT:5432}
+  host: ${DATASOURCE_HOST:db_todo}
   username: ${DATASOURCE_USERNAME:postgres}
   password: ${DATASOURCE_PASSWORD:postgres}
   db_name: ${DATASOURCE_DB_NAME:todo}

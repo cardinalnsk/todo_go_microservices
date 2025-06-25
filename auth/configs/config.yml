@@ -1,5 +1,5 @@
 main:
-  port: ${MAIN_PORT:8088}
+  port: ${MAIN_PORT:8080}
 
 logger:
   level: ${LOG_LEVEL:debug}
@@ -11,8 +11,8 @@ auth:
   expiration: ${AUTH_EXPIRATION:1h}
 
 datasource:
-  port: ${DATASOURCE_PORT:5444}
-  host: ${DATASOURCE_HOST:localhost}
+  port: ${DATASOURCE_PORT:5432}
+  host: ${DATASOURCE_HOST:db_auth}
   username: ${DATASOURCE_USERNAME:postgres}
   password: ${DATASOURCE_PASSWORD:postgres}
   db_name: ${DATASOURCE_DB_NAME:auth}

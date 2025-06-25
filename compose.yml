@@ -1,5 +1,49 @@
 services:
 
+  gateway:
+    build: ./api-gateway
+    volumes:
+      - ./api-gateway/configs:/app/configs
+    depends_on:
+      auth:
+        condition: service_started
+      todo:
+        condition: service_started
+    environment:
+      # Переменные для проксирования:
+      - AUTH_URL=http://auth:8080
+      - TODO_URL=http://todo:8080
+    ports:
+      - "8080:8080"
+
+  auth:
+    build: ./auth
+    volumes:
+      - ./auth/configs:/app/configs
+    environment:
+      - DB_HOST=db_auth
+      - DB_PORT=5432
+      - DB_USER=${AUTH_DATASOURCE_USERNAME}
+      - DB_PASSWORD=${AUTH_DATASOURCE_PASSWORD}
+      - DB_NAME=${AUTH_DATASOURCE_DB_NAME}
+    depends_on:
+      migrate_auth:
+        condition: service_completed_successfully
+
+  todo:
+    build: ./todo
+    volumes:
+      - ./todo/configs:/app/configs
+    environment:
+      - DB_HOST=db_todo
+      - DB_PORT=5432
+      - DB_USER=${TODO_DATASOURCE_USERNAME}
+      - DB_PASSWORD=${TODO_DATASOURCE_PASSWORD}
+      - DB_NAME=${TODO_DATASOURCE_DB_NAME}
+    depends_on:
+      migrate_todo:
+        condition: service_completed_successfully
+
   db_auth:
     image: postgres:16.4
     ports:
@@ -26,11 +70,52 @@ services:
       POSTGRES_DB: ${TODO_DATASOURCE_DB_NAME}
     volumes:
       - todos:/var/lib/postgresql/data
+      - ./todo/configs:/app/configs
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${TODO_DATASOURCE_USERNAME} -d ${TODO_DATASOURCE_DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+
+  migrate_auth:
+    image: migrate/migrate:v4.17.1
+    depends_on:
+      db_auth:
+        condition: service_healthy
+    volumes:
+      - ./auth/schema:/migrations
+    command:
+      [
+        "-path", "/migrations",
+        "-database", "postgres://${AUTH_DATASOURCE_USERNAME}:${AUTH_DATASOURCE_PASSWORD}@db_auth:5432/${AUTH_DATASOURCE_DB_NAME}?sslmode=disable",
+        "up"
+      ]
+    environment:
+      AUTH_DATASOURCE_USERNAME: ${AUTH_DATASOURCE_USERNAME}
+      AUTH_DATASOURCE_PASSWORD: ${AUTH_DATASOURCE_PASSWORD}
+      AUTH_DATASOURCE_DB_NAME: ${AUTH_DATASOURCE_DB_NAME}
+    restart: "on-failure"
+
+  migrate_todo:
+    image: migrate/migrate:v4.17.1
+    depends_on:
+      db_todo:
+        condition: service_healthy
+    volumes:
+      - ./todo/schema:/migrations
+    command:
+      [
+        "-path", "/migrations",
+        "-database", "postgres://${TODO_DATASOURCE_USERNAME}:${TODO_DATASOURCE_PASSWORD}@db_todo:5432/${TODO_DATASOURCE_DB_NAME}?sslmode=disable",
+        "up"
+      ]
+    environment:
+      TODO_DATASOURCE_USERNAME: ${TODO_DATASOURCE_USERNAME}
+      TODO_DATASOURCE_PASSWORD: ${TODO_DATASOURCE_PASSWORD}
+      TODO_DATASOURCE_DB_NAME: ${TODO_DATASOURCE_DB_NAME}
+    restart: "on-failure"
+
 
 volumes:
   todos:
