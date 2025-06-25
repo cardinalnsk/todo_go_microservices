@@ -1,0 +1,37 @@
+services:
+
+  db_auth:
+    image: postgres:16.4
+    ports:
+      - "127.0.0.1:${AUTH_DATASOURCE_PORT}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${AUTH_DATASOURCE_PASSWORD}
+      POSTGRES_USER: ${AUTH_DATASOURCE_USERNAME}
+      POSTGRES_DB: ${AUTH_DATASOURCE_DB_NAME}
+    volumes:
+      - todo_auth:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DATASOURCE_USERNAME} -d ${AUTH_DATASOURCE_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db_todo:
+    image: postgres:16.4
+    ports:
+      - "127.0.0.1:${TODO_DATASOURCE_PORT}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${TODO_DATASOURCE_PASSWORD}
+      POSTGRES_USER: ${TODO_DATASOURCE_USERNAME}
+      POSTGRES_DB: ${TODO_DATASOURCE_DB_NAME}
+    volumes:
+      - todos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TODO_DATASOURCE_USERNAME} -d ${TODO_DATASOURCE_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  todos:
+  todo_auth:

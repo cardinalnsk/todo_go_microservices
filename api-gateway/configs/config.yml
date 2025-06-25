@@ -1,0 +1,16 @@
+main:
+  port: "8080"
+  name: "api-gateway"
+
+logger:
+  level: "debug"
+  pretty: true
+
+gateway:
+  jwt_signing_key: "${JWT_SIGNING_KEY:superSecretKey}"
+
+auth:
+  url: "${AUTH_URL:http://localhost:8088}"
+
+todo:
+  url: "${TODO_URL:http://localhost:8089}"

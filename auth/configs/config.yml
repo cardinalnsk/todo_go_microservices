@@ -1,0 +1,19 @@
+main:
+  port: ${MAIN_PORT:8088}
+
+logger:
+  level: ${LOG_LEVEL:debug}
+  pretty: ${LOG_PRETTY:false}
+
+auth:
+  signing_key: ${AUTH_SIGNING_KEY:superSecretKey}
+  salt: ${AUTH_SALT:qwrfv23trfgvbhtrj6iues4twesfgdbdnjJTDURCGVDATR&^&%}
+  expiration: ${AUTH_EXPIRATION:1h}
+
+datasource:
+  port: ${DATASOURCE_PORT:5444}
+  host: ${DATASOURCE_HOST:localhost}
+  username: ${DATASOURCE_USERNAME:postgres}
+  password: ${DATASOURCE_PASSWORD:postgres}
+  db_name: ${DATASOURCE_DB_NAME:auth}
+  ssl_mode: ${DATASOURCE_SSL_MODE:disable}

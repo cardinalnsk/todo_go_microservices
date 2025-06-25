@@ -1,0 +1,15 @@
+main:
+  port: ${MAIN_PORT:8089}
+
+logger:
+  level: ${LOG_LEVEL:debug}
+  pretty: ${LOG_PRETTY:false}
+
+
+datasource:
+  port: ${DATASOURCE_PORT:5445}
+  host: ${DATASOURCE_HOST:localhost}
+  username: ${DATASOURCE_USERNAME:postgres}
+  password: ${DATASOURCE_PASSWORD:postgres}
+  db_name: ${DATASOURCE_DB_NAME:todo}
+  ssl_mode: ${DATASOURCE_SSL_MODE:disable}
