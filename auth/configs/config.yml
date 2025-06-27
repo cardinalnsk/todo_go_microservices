@@ -6,9 +6,9 @@ logger:
   pretty: ${LOG_PRETTY:false}
 
 auth:
-  signing_key: ${AUTH_SIGNING_KEY:superSecretKey}
   salt: ${AUTH_SALT:qwrfv23trfgvbhtrj6iues4twesfgdbdnjJTDURCGVDATR&^&%}
   expiration: ${AUTH_EXPIRATION:1h}
+  jwt_private_key_path: "${RSA_PRIVATE_KEY_PATH:./keys/test.key}"
 
 datasource:
   port: ${DATASOURCE_PORT:5432}

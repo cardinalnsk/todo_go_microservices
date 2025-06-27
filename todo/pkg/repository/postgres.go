@@ -12,10 +12,14 @@ func NewPostgresDB(cfg config.DataSourceConfig) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.Ping()
 	if err != nil {
 		return nil, err
 	}
+
+	db.SetMaxOpenConns(20)
+	db.SetMaxIdleConns(10)
 
 	return db, nil
 }

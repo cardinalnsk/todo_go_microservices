@@ -1,10 +1,12 @@
 package config
 
 import (
+	"crypto/rsa"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"log"
 	"os"
 	"regexp"
 	"time"
@@ -30,9 +32,10 @@ type LoggerConfig struct {
 }
 
 type AuthConfig struct {
-	Salt       string        `yaml:"salt"`
-	SigningKey string        `yaml:"signing_key"`
-	Expiration time.Duration `yaml:"expiration"`
+	Salt              string        `yaml:"salt"`
+	Expiration        time.Duration `yaml:"expiration"`
+	JwtPrivateKeyPath string        `yaml:"jwt_private_key_path"`
+	PrivateKey        *rsa.PrivateKey
 }
 
 type Config struct {
@@ -45,7 +48,8 @@ type Config struct {
 func LoadConfig(path string) (*Config, error) {
 	gin.SetMode(gin.ReleaseMode)
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found or failed to load")
+		logrus.Warning("No .env file found or failed to load. Using default config.")
+		logrus.Warning("ERROR: ", err.Error())
 	}
 
 	data, err := os.ReadFile(path)
@@ -59,6 +63,8 @@ func LoadConfig(path string) (*Config, error) {
 	if err := yaml.Unmarshal([]byte(processed), &cfg); err != nil {
 		return nil, err
 	}
+
+	cfg.Auth.PrivateKey = LoadPrivateKey(cfg.Auth.JwtPrivateKeyPath)
 	return &cfg, nil
 }
 
@@ -75,4 +81,16 @@ func replaceEnvVars(input string) string {
 		}
 		return val
 	})
+}
+
+func LoadPrivateKey(path string) *rsa.PrivateKey {
+	keyData, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	privKey, err := jwt.ParseRSAPrivateKeyFromPEM(keyData)
+	if err != nil {
+		panic(err)
+	}
+	return privKey
 }

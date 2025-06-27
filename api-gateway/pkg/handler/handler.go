@@ -3,13 +3,15 @@ package handler
 import (
 	"api-gateway/pkg/config"
 	"api-gateway/pkg/logger"
+	"crypto/rsa"
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	authURL       string
-	todoURL       string
-	jwtSigningKey string
+	authURL string
+	todoURL string
+	//jwtSigningKey string
+	publicKey *rsa.PublicKey
 }
 
 func NewHandler(
@@ -18,9 +20,9 @@ func NewHandler(
 	todoCfg config.UpstreamServiceConfig,
 ) *Handler {
 	return &Handler{
-		authURL:       authCfg.Url,
-		todoURL:       todoCfg.Url,
-		jwtSigningKey: gatewayCfg.JwtSigningKey,
+		authURL:   authCfg.Url,
+		todoURL:   todoCfg.Url,
+		publicKey: gatewayCfg.PublicKey,
 	}
 }
 

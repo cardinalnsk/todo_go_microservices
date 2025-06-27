@@ -1,6 +1,9 @@
 package config
 
 import (
+	"crypto/rsa"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -19,7 +22,8 @@ type LoggerConfig struct {
 }
 
 type GatewayConfig struct {
-	JwtSigningKey string `yaml:"jwt_signing_key"`
+	JwtKeyPath string `yaml:"jwt_public_key_path"`
+	PublicKey  *rsa.PublicKey
 }
 
 type UpstreamServiceConfig struct {
@@ -35,6 +39,8 @@ type Config struct {
 }
 
 func LoadConfig(path string) (*Config, error) {
+	gin.SetMode(gin.ReleaseMode)
+
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found or failed to load")
 	}
@@ -50,6 +56,7 @@ func LoadConfig(path string) (*Config, error) {
 	if err := yaml.Unmarshal([]byte(processed), &cfg); err != nil {
 		return nil, err
 	}
+	cfg.Gateway.PublicKey = LoadPublicKey(cfg.Gateway.JwtKeyPath)
 	return &cfg, nil
 }
 
@@ -66,4 +73,16 @@ func replaceEnvVars(input string) string {
 		}
 		return val
 	})
+}
+
+func LoadPublicKey(path string) *rsa.PublicKey {
+	pubKeyData, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	pubKey, err := jwt.ParseRSAPublicKeyFromPEM(pubKeyData)
+	if err != nil {
+		panic(err)
+	}
+	return pubKey
 }

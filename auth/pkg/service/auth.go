@@ -6,7 +6,7 @@ import (
 	"auth/pkg/repository"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
@@ -16,7 +16,7 @@ const (
 )
 
 type tokenClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	UserId int `json:"user_id"`
 }
 
@@ -48,25 +48,25 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 		return "", errors.New("invalid credentials")
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(s.cfg.Expiration).Unix(),
-			IssuedAt:  time.Now().Unix(),
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, &tokenClaims{
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.cfg.Expiration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		user.Id,
 	})
 
-	return token.SignedString([]byte(s.cfg.SigningKey))
+	return token.SignedString(s.cfg.PrivateKey)
 }
 
 func (s *AuthService) ParseToken(accessToken string) (int, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if token.Method.Alg() != jwt.SigningMethodRS256.Alg() {
 			return nil, errors.New("unexpected signing method")
 		}
-		return []byte(s.cfg.SigningKey), nil
+		// Можно вернуть либо приватный, либо публичный ключ:
+		return s.cfg.PrivateKey, nil
 	})
-
 	if err != nil {
 		return 0, err
 	}

@@ -2,8 +2,8 @@ services:
 
   gateway:
     build: ./api-gateway
-    volumes:
-      - ./api-gateway/configs:/app/configs
+#    volumes:
+#      - ./api-gateway/configs:/app/configs
     depends_on:
       auth:
         condition: service_started
@@ -18,8 +18,8 @@ services:
 
   auth:
     build: ./auth
-    volumes:
-      - ./auth/configs:/app/configs
+#    volumes:
+#      - ./auth/configs:/app/configs
     environment:
       - DB_HOST=db_auth
       - DB_PORT=5432
@@ -32,8 +32,12 @@ services:
 
   todo:
     build: ./todo
-    volumes:
-      - ./todo/configs:/app/configs
+    deploy:
+      replicas: 3
+    expose:
+      - "8080"
+#    volumes:
+#      - ./todo/configs:/app/configs
     environment:
       - DB_HOST=db_todo
       - DB_PORT=5432

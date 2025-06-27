@@ -1,8 +1,10 @@
 package handler
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"strconv"
@@ -11,7 +13,7 @@ import (
 
 type claims struct {
 	UserID int `json:"user_id"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 const (
@@ -33,7 +35,12 @@ func (h *Handler) AuthMiddleware(c *gin.Context) {
 	tokenStr = strings.TrimPrefix(tokenStr, "Bearer ")
 	var cl claims
 	token, err := jwt.ParseWithClaims(tokenStr, &cl, func(token *jwt.Token) (interface{}, error) {
-		return []byte(h.jwtSigningKey), nil
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			err := fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			logrus.Error(err)
+			return nil, err
+		}
+		return h.publicKey, nil
 	})
 	if err != nil || !token.Valid {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
